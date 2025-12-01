@@ -8,9 +8,17 @@ type Props = {
   folder: FolderGroup;
   expanded: boolean;
   onToggle: (path: string) => void;
+  anchorId: string;
+  onPreview: (payload: { src: string; title: string; filePath: string }) => void;
 };
 
-export const FolderSection = ({ folder, expanded, onToggle }: Props) => {
+export const FolderSection = ({
+  folder,
+  expanded,
+  onToggle,
+  anchorId,
+  onPreview,
+}: Props) => {
   const images = useMemo(
     () =>
       folder.images.map((imagePath) => ({
@@ -31,7 +39,10 @@ export const FolderSection = ({ folder, expanded, onToggle }: Props) => {
   }, [folder.path]);
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl shadow-black/40">
+    <section
+      id={anchorId}
+      className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl shadow-black/40"
+    >
       <header className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-base font-semibold text-slate-50">{folder.name}</p>
@@ -69,6 +80,7 @@ export const FolderSection = ({ folder, expanded, onToggle }: Props) => {
                   src={img.url}
                   title={img.name}
                   filePath={img.path}
+                  onPreview={onPreview}
                 />
               ))}
             </div>

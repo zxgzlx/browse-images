@@ -1,11 +1,34 @@
+import { useCallback, useState } from "react";
+
 type Props = {
   folderPath: string | null;
+  folderNav: { name: string; anchorId: string }[];
   onChooseFolder: () => void;
   onRefresh: () => void;
 };
 
-export const HeaderBar = ({ folderPath, onChooseFolder, onRefresh }: Props) => {
+export const HeaderBar = ({
+  folderPath,
+  folderNav,
+  onChooseFolder,
+  onRefresh,
+}: Props) => {
   const canRefresh = Boolean(folderPath);
+  const [navOpen, setNavOpen] = useState(false);
+
+  const handleJump = useCallback((anchorId: string) => {
+    const el = document.getElementById(anchorId);
+    if (el) {
+      const headerOffset = 80;
+      const { top } = el.getBoundingClientRect();
+      const target = top + window.scrollY - headerOffset;
+      window.scrollTo({
+        top: Math.max(target, 0),
+        behavior: "smooth",
+      });
+    }
+    setNavOpen(false);
+  }, []);
 
   return (
     <header className="sticky top-3 z-10 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-lg shadow-black/30">
@@ -32,6 +55,45 @@ export const HeaderBar = ({ folderPath, onChooseFolder, onRefresh }: Props) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 md:justify-end">
+          <div
+            className="relative"
+            onMouseEnter={() => setNavOpen(true)}
+            onMouseLeave={() => setNavOpen(false)}
+          >
+            <button
+              className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-white/25 hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              disabled={!folderNav.length}
+            >
+              目录
+            </button>
+            {navOpen && (
+              <div
+                className="absolute right-0 top-full w-52 overflow-hidden rounded-xl border border-white/10 bg-slate-900/95 text-sm text-slate-100 shadow-xl shadow-black/40 backdrop-blur"
+                onMouseEnter={() => setNavOpen(true)}
+                onMouseLeave={() => setNavOpen(false)}
+              >
+                {folderNav.length ? (
+                  <ul className="max-h-72 overflow-y-auto divide-y divide-white/5">
+                    {folderNav.map((item) => (
+                      <li key={item.anchorId}>
+                        <button
+                          type="button"
+                          onClick={() => handleJump(item.anchorId)}
+                          className="block w-full px-4 py-2 text-left transition hover:bg-white/10"
+                        >
+                          {item.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-4 py-3 text-xs text-slate-400">暂无目录</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-white/25 hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onRefresh}

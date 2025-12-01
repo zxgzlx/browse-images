@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "./components/EmptyState";
 import { FolderSection } from "./components/FolderSection";
 import { HeaderBar } from "./components/HeaderBar";
+import { ImagePreviewModal } from "./components/ImagePreviewModal";
 import { useFolderImages } from "./hooks/useFolderImages";
+
+const toAnchorId = (path: string) =>
+  ("folder-" + path.replace(/[^a-zA-Z0-9]/g, "-"))
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "folder";
 
 function App() {
   const {
@@ -17,6 +23,20 @@ function App() {
   } = useFolderImages();
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [preview, setPreview] = useState<{
+    src: string;
+    title: string;
+    filePath: string;
+  } | null>(null);
+
+  const folderNav = useMemo(
+    () =>
+      folders.map((folder) => ({
+        name: folder.name,
+        anchorId: toAnchorId(folder.path),
+      })),
+    [folders]
+  );
 
   useEffect(() => {
     const next: Record<string, boolean> = {};
@@ -35,6 +55,7 @@ function App() {
       <div className="mx-auto max-w-7xl space-y-4 px-4 py-4">
         <HeaderBar
           folderPath={folderPath}
+          folderNav={folderNav}
           onChooseFolder={chooseFolder}
           onRefresh={() => refresh()}
         />
@@ -71,6 +92,8 @@ function App() {
               folder={folder}
               expanded={expanded[folder.path] !== false}
               onToggle={toggleFolder}
+              anchorId={toAnchorId(folder.path)}
+              onPreview={setPreview}
             />
           ))}
 
@@ -81,6 +104,10 @@ function App() {
           )}
         </main>
       </div>
+
+      {preview && (
+        <ImagePreviewModal image={preview} onClose={() => setPreview(null)} />
+      )}
     </div>
   );
 }

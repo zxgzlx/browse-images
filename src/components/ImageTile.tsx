@@ -5,11 +5,13 @@ type Props = {
   src: string;
   title: string;
   filePath: string;
+  onPreview: (payload: { src: string; title: string; filePath: string }) => void;
 };
 
 const DEFAULT_BG = "#0f172a";
+const MAX_TILE_HEIGHT = 480;
 
-export const ImageTile = ({ src, title, filePath }: Props) => {
+export const ImageTile = ({ src, title, filePath, onPreview }: Props) => {
   const [backgroundColor, setBackgroundColor] = useState(DEFAULT_BG);
 
   const imageName = useMemo(
@@ -33,6 +35,10 @@ export const ImageTile = ({ src, title, filePath }: Props) => {
     [openInExplorer]
   );
 
+  const handleClick = useCallback(() => {
+    onPreview({ src, title: imageName, filePath });
+  }, [filePath, imageName, onPreview, src]);
+
   const resetBackground = useCallback(() => setBackgroundColor(DEFAULT_BG), []);
 
   return (
@@ -45,7 +51,10 @@ export const ImageTile = ({ src, title, filePath }: Props) => {
           src={src}
           alt={imageName}
           loading="lazy"
-          className="w-full object-cover transition duration-300 hover:scale-[1.01]"
+          className="w-full max-h-[480px] object-contain transition duration-300 hover:scale-[1.01]"
+          style={{ maxHeight: MAX_TILE_HEIGHT }}
+          draggable={false}
+          onClick={handleClick}
           onContextMenu={handleContextMenu}
         />
       </div>
