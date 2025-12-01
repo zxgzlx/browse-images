@@ -62,29 +62,17 @@ fn load_images_from_dir(root: String) -> Result<Vec<FolderImages>, String> {
             continue;
         }
 
-        let rel = path.strip_prefix(&root_path).ok();
-        let top_folder = rel
-            .and_then(|relative| relative.parent())
-            .and_then(|parent| parent.components().next())
-            .and_then(|component| component.as_os_str().to_str())
-            .map(|name| name.to_string())
-            .unwrap_or_else(|| root_name.clone());
+        let dir = path.parent().unwrap();
+        let dir_name = dir.file_name().unwrap().to_string_lossy().to_string();
 
-        let folder_path = if top_folder == root_name {
-            root_path.clone()
-        } else {
-            root_path.join(&top_folder)
-        };
-
-        let entry = groups.entry(top_folder.clone()).or_insert(FolderImages {
-            name: top_folder,
-            path: folder_path.to_string_lossy().to_string(),
+        let name = dir.to_string_lossy().to_string();
+        let entry = groups.entry(name.clone()).or_insert(FolderImages {
+            name: dir_name,
+            path: name.clone(),
             images: Vec::new(),
         });
 
-        entry
-            .images
-            .push(path.to_string_lossy().to_string());
+        entry.images.push(path.to_string_lossy().to_string());
     }
 
     let mut result: Vec<FolderImages> = groups
